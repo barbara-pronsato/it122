@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
  // send plain text response
  app.get('/about', (req, res) => {
   res.type('text/plain');
-  res.send('About page');
+  res.send('This is the about page');
  });
 
  // send dynamic page response
