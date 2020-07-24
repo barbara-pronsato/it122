@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<!-- Art piece title -->
+    <title>    
+        
+        {{#with details}}
+       Pop-up - {{ title }} </title>
+
+        {{/with}}
+    
+
+  </head>
+  <body>
+    <h1>Art Pop-up Detail Page</h1> 
+
+<!-- Value submitted on request url -->
+    <h2>Details of artwork with ID of {{id}}:</h2>
+
+<!-- #with built-in helper-->
+
+{{!-- <h3>Title: {{ title }}</h3> --}}
+
+        <ul>
+        {{#with details}}
+        <h3>Title of Piece: {{ title }}</h3>
+            <li>Name of Artist: {{ artist_name }}</li>
+            <li>Media: {{ media }}</li>
+            <li>Price: ${{ price }}</li>
+
+        {{/with}}
+        </ul>
+
+<!-- Link back home -->
+    <p class="home"><a href="../">Take me back home</a></p>
