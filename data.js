@@ -18,3 +18,56 @@ exports.getDetail = id => {
     return artItem;
     }
 };
+
+exports.getItem = id => {
+  const artItem = art.find(art => art.id === id);
+  if (artItem === undefined) {
+      return ({
+        status: 'failure', 
+        message: 'Artwork with ID ' + id + ' not found'
+       })
+      }    
+  else {
+    return ({
+      status: 'success', 
+      data: artItem
+      });
+    }
+}
+
+exports.addItem = newItem => {
+  if (newItem.title === undefined) {
+    return({
+      status: 'failure',
+      message: 'all art items must have a title'
+    })
+  }
+  else {
+    art.push(newItem);
+    return({
+      status: 'success',
+      message: newItem.title + " added to the list of art items"
+    })
+  }
+};
+
+
+exports.deleteItem = id => {
+  const artItem = art.find(art => art.id === id);
+  if (artItem === undefined) {
+      return ({
+        status: 'failure', 
+        message: 'Artwork with ID ' + id + ' not found to delete'
+       })
+      }    
+  else {
+    const artToRemove = art.map(function(e) { return e.id; }).indexOf(id);
+    console.log(art[artToRemove])
+    art.splice(artToRemove, 1) 
+    console.log(art)
+    return ({
+      status: 'success', 
+      message: 'item with ID ' + id + ' removed'
+    });
+  }
+};
