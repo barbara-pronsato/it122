@@ -1,0 +1,6 @@
+# ignore npm packages
+node_modules
+.idea/
+.DS_Store     
+.vscode
+credentials.js

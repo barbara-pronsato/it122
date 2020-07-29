@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Art Pop-up Shop</title>
+ 
+  </head>
+  <body>
+   <h1>Art Pop-Up</h1> 
+   <h2>Select artist name to view artist, price, media and type </h2>
+   
+   <!--
+    -#each helper: 
+    loops through each item in art array 
+    creates list item for each piece of art title 
+    each list item links to the details handlebar template
+    query parameter of the art item id
+    -->
+    <ul>
+        {{#each art}}
+            <li><a href= "/detail?id={{id}}">{{artist_name}}</a></li>
+        {{/each}}
+    </ul>
+  </body>
+</html>
