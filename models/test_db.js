@@ -10,5 +10,6 @@ Art.find({}, (err, result) => {
     //otherwise output the aray of documents
     console.log(result);
 }
+return
 
 });

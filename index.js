@@ -1,12 +1,18 @@
 
 const http = require("http");
-const art = require('./data');
+//const art = require('./data');
 const express = require("express");
 const bodyParser = require("body-parser")
+const Art = require('./models/arts');
+
 
 
 const app = express();
+
+//set template engine
 const exphbs = require('express-handlebars');
+const arts = require("./models/arts");
+
 
 app.engine('handlebars', exphbs({
   defaultLayout: false
@@ -14,18 +20,62 @@ app.engine('handlebars', exphbs({
 
 app.set('view engine', 'handlebars');
 
-const displayArt = art.getAll();
 
+
+// configure express app
 app.set('port', process.env.PORT || 3000);
+
 app.use(express.static(__dirname + '/public')); // set location for static files
+
+//to tell your server (using body parser) that you're sending information as if it was coming from a form
 app.use(bodyParser.urlencoded({extended: true})); // parse form submission
+
+//to tell your server (using body parser) that you're sending information in json
+app.use(bodyParser.json());
+
+// app.use('/api', require("cors")());
+
+app.use((err, req, res, next) => {
+  console.log(err);
+});
 
 // Route handlers app.get()  app.post() error handlers app.use():
 
 // send static file as response
-app.get('/', (req, res) => {
-  res.type('text/html');
-  res.render('home', {art: displayArt});
+
+app.get('/', (req, res, next) => {
+  return Art.find({}).lean()
+    .then((arts) => {
+      console.log(arts)
+        res.render('home', { arts });
+    })
+    .catch(err => next(err));
+});
+
+String.prototype.toObjectId = function() {  var ObjectId = (require('mongoose').Types.ObjectId);  return new ObjectId(this.toString());};
+
+app.get('/detail', (req, res, next) => {
+  const id = req.query.id;
+  return Art.findOne({"_id": id.toObjectId()}).lean()
+    .then((details) => {
+      console.log(details)
+        res.render('detail', { id: id, details: details });
+    })
+    .catch(err => next(err));
+});
+
+app.get('/delete', (req, res) => {
+  const id = req.query.id;
+  return Art.deleteOne({"_id": id.toObjectId()}).lean()
+    .then((result) => {
+      console.log(result)
+      if (result.deletedCount === 1) {
+      res.send('Art item with ID ' + id + ' deleted');
+      } else {
+        res.send('No item with ID ' + id + ' available to delete')
+      }
+    })
+    .catch(err => next(err));
  });
  
  // send plain text response
@@ -34,12 +84,12 @@ app.get('/', (req, res) => {
   res.send('This is the about page');
  });
 
- // send dynamic page response
- app.get('/detail', (req, res) => {
-  const id = parseInt(req.query.id);
-  const details = art.getDetail(id);
-  res.render('detail', {id: id, details: details});
-});
+//  // send dynamic page response
+//  app.get('/detail', (req, res) => {
+//   const id = parseInt(req.query.id);
+//   const details = art.getDetail(id);
+//   res.render('detail', {id: id, details: details});
+// });
 
   // define 404 handler
 app.use( (req,res) => {
@@ -52,6 +102,8 @@ app.use( (req,res) => {
  app.listen(app.get('port'), () => {
   console.log('Express started'); 
  });
+
+
  
 // http.createServer((req,res) => {
 //   const path = req.url.toLowerCase();
