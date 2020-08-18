@@ -3,6 +3,7 @@ const http = require("http");
 //const art = require('./data');
 const express = require("express");
 const bodyParser = require("body-parser")
+const cors = require("cors");
 const Art = require('./models/arts');
 
 
@@ -12,6 +13,7 @@ const app = express();
 //set template engine
 const exphbs = require('express-handlebars');
 const arts = require("./models/arts");
+const { title } = require("process");
 
 
 app.engine('handlebars', exphbs({
@@ -33,7 +35,7 @@ app.use(bodyParser.urlencoded({extended: true})); // parse form submission
 //to tell your server (using body parser) that you're sending information in json
 app.use(bodyParser.json());
 
-// app.use('/api', require("cors")());
+app.use('/api', require("cors")());
 
 app.use((err, req, res, next) => {
   console.log(err);
@@ -42,6 +44,61 @@ app.use((err, req, res, next) => {
 // Route handlers app.get()  app.post() error handlers app.use():
 
 // send static file as response
+
+// get a single item (REST api assignment)
+
+app.get('/api/getItem', (req, res, next) => {
+  const id = req.query.id;
+  return Art.findOne({"_id": id.toObjectId()}).lean()
+    .then((details) => {
+      console.log(details)
+        res.send(details);
+    })
+    .catch(err => next(err));
+});
+
+// get all items (REST api assignment)
+
+app.get('/api/getAllItems', (req, res, next) => {
+  return Art.find({}).lean()
+    .then((arts) => {
+      console.log(arts)
+        res.send(arts);
+    })
+    .catch(err => next(err));
+});
+
+// delete item (REST api assignment)
+
+app.get('/api/deleteItem', (req, res) => {
+  const id = req.query.id;
+  return Art.deleteOne({"_id": id.toObjectId()}).lean()
+    .then((result) => {
+      console.log(result)
+      if (result.deletedCount === 1) {
+      res.sendStatus(204).send();
+      } else {
+        res.sendStatus(400).send('Invalid ID Parameter');
+      }
+    })
+    .catch(err => next(err));
+ });
+
+// add item (REST api assignment)
+
+ app.post('/api/addItem', (req, res) => {
+  const newItem = req.body
+  return Art.create({"title": newItem.title, "artist": newItem.artist, "year": newItem.year, "materials": newItem.materials})
+    .then((result) => {
+      console.log(result)
+      if (result.title === newItem.title) {
+      res.send('Item added');
+      } else {
+        res.sendStatus(400).send('Item not added');
+      }
+    })
+    .catch(err => next(err));
+ });
 
 app.get('/', (req, res, next) => {
   return Art.find({}).lean()
