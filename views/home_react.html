@@ -1,0 +1,121 @@
+<html>
+<head>
+    <title>React App Demo</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+</head>
+
+<body>
+
+<div id="root"></div>
+<script type="text/babel">
+
+    // define your sub components here
+
+class ItemRow extends React.Component {
+  render() {
+    const item = this.props.item
+    return (
+      <tr>
+        <td><button onClick={()=>{this.props.selectItem(item)}}>{item.artist}</button></td>
+      </tr>
+    );
+  }
+}
+
+class ArtList extends React.Component {
+  render() {
+    const rows = [];
+    
+    this.props.arts.forEach((item) => {
+      rows.push(
+        <ItemRow
+          item={item} 
+          selectItem={this.props.selectItem}
+          key={item._id}
+        />
+      );
+    });
+
+    return (
+      <table>
+        <tbody>{rows}</tbody>
+      </table>
+    );
+  }
+}
+
+class ArtDetails extends React.Component {
+  render() {
+
+    var item = this.props.selectedItem
+
+    return (
+      <div>
+        <br/>
+        <h2>Selected Item:</h2>
+        <table>
+          <tbody>
+            <tr>
+              <th>Title:</th>
+              <td>{item.title}</td>
+            </tr>
+            <tr>
+              <th>Artist:</th>
+              <td>{item.artist}</td>
+            </tr>
+            <tr>
+              <th>Year:</th>
+              <td>{item.year}</td>
+            </tr>
+            <tr>
+              <th>Materials:</th>
+              <td>{item.materials}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+}
+
+class App extends React.Component{
+  constructor(props){
+      super(props);
+      // Set initial state using data from server application
+      this.state = {
+        arts: {{{ arts }}},
+        currentItem: { } // current selected item
+      };
+
+      // bind application state to click handler
+      this.selectItem = this.selectItem.bind(this);
+    }
+
+  // handle list item clicked
+  selectItem(item) {
+    console.log('the user clicked ' + item.artist)
+    this.setState(state => ({
+      currentItem: item
+    }));
+  }
+
+  render() {
+    // render app UI elements
+    return (
+      <div>
+          <h1>Art Pop-Up</h1> 
+          <h2>Select artist name to view artist, price, media and type </h2>
+          <ArtList arts={this.state.arts} selectItem={this.selectItem}/>
+          <ArtDetails selectedItem={this.state.currentItem}/>
+      </div>
+      );
+  }
+}
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>

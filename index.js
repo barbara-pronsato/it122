@@ -1,26 +1,19 @@
-
 const http = require("http");
 //const art = require('./data');
 const express = require("express");
 const bodyParser = require("body-parser")
 const cors = require("cors");
 const Art = require('./models/arts');
+const babel = require("@babel/core")
 
 
 
 const app = express();
 
 //set template engine
-const exphbs = require('express-handlebars');
-const arts = require("./models/arts");
-const { title } = require("process");
-
-
-app.engine('handlebars', exphbs({
-  defaultLayout: false
-}));
-
-app.set('view engine', 'handlebars');
+const handlebars = require('express-handlebars');
+app.engine(".html", handlebars({extname: ".html", defaultLayout: false}));
+app.set('view engine', 'html'); 
 
 
 
@@ -99,15 +92,23 @@ app.get('/api/deleteItem', (req, res) => {
     })
     .catch(err => next(err));
  });
+ 
+/* app.get('/', (req, res, next) => {
+  Art.find((err, arts) => {
+    if (err) return next (err);
+    res.render('home_react', {art: JSON.stringify(arts)})
+  })
+    
+}); */
 
-app.get('/', (req, res, next) => {
+ app.get('/', (req, res, next) => {
   return Art.find({}).lean()
     .then((arts) => {
       console.log(arts)
-        res.render('home', { arts });
+        res.render('home_react', { arts: JSON.stringify(arts) });
     })
     .catch(err => next(err));
-});
+}); 
 
 String.prototype.toObjectId = function() {  var ObjectId = (require('mongoose').Types.ObjectId);  return new ObjectId(this.toString());};
 
