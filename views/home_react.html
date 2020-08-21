@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>React App Demo</title>
+    <title>Art Pop-Up Shop</title>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <!-- Don't use this in production: -->
@@ -50,32 +50,36 @@ class ArtList extends React.Component {
 class ArtDetails extends React.Component {
   render() {
 
-    var item = this.props.selectedItem
+    const inputStyle = {
+      paddingRight: '10'
+    }
 
     return (
       <div>
         <br/>
         <h2>Selected Item:</h2>
-        <table>
-          <tbody>
-            <tr>
-              <th>Title:</th>
-              <td>{item.title}</td>
-            </tr>
-            <tr>
-              <th>Artist:</th>
-              <td>{item.artist}</td>
-            </tr>
-            <tr>
-              <th>Year:</th>
-              <td>{item.year}</td>
-            </tr>
-            <tr>
-              <th>Materials:</th>
-              <td>{item.materials}</td>
-            </tr>
-          </tbody>
-        </table>
+        <form onSubmit={this.props.handleSubmit}>
+          <div>
+            <label style={inputStyle} htmlFor="titleField">Title:</label>
+            <input type="text" id="titleField" name="titleField" size="50" value={this.props.titleField} onChange={this.props.handleFieldChange}/>
+          </div>
+          <div>
+            <label style={inputStyle} htmlFor="artistField">Artist:</label>
+            <input type="text" id="artistField" name="artistField" size="50" value={this.props.artistField} onChange={this.props.handleFieldChange}/>
+          </div>
+          <div>
+            <label style={inputStyle} htmlFor="yearField">Year:</label>
+            <input type="text" id="yearField" name="yearField" size="4" value={this.props.yearField} onChange={this.props.handleFieldChange}/>
+          </div>
+          <div>
+            <label style={inputStyle} htmlFor="materialsField">Materials:</label>
+            <input type="text" id="materialsField" name="materialsField" size="50" value={this.props.materialsField} onChange={this.props.handleFieldChange}/>
+          </div>
+          <div><input onClick={() => this.props.setSubmitButton(0)} type="submit" name="delete" value="Delete" /></div>
+          <div><input onClick={() => this.props.setSubmitButton(1)} type="submit" name="update" value="Save" /></div>
+        </form>
+        <button onClick={()=>{this.props.clearFields()}}>Clear Selection</button>
+        <button onClick={()=>{this.props.addTestItem()}}>Add Test Item</button>
       </div>
     );
   }
@@ -87,18 +91,128 @@ class App extends React.Component{
       // Set initial state using data from server application
       this.state = {
         arts: {{{ arts }}},
-        currentItem: { } // current selected item
+        currentItem: { }, // current selected item
+        yearField: '',
+        artistField: '',
+        titleField: '',
+        materialsField: '',
+        inputButton: 0
       };
 
       // bind application state to click handler
       this.selectItem = this.selectItem.bind(this);
+      this.handleFieldChange = this.handleFieldChange.bind(this);
+      this.handleSubmit = this.handleSubmit.bind(this);
+      this.clearFields = this.clearFields.bind(this);
+      this.setSubmitButton = this.setSubmitButton.bind(this);
+      this.addTestItem = this.addTestItem.bind(this);
     }
 
   // handle list item clicked
   selectItem(item) {
     console.log('the user clicked ' + item.artist)
     this.setState(state => ({
-      currentItem: item
+      titleField: item.title,
+      artistField: item.artist,
+      yearField: item.year,
+      materialsField: item.materials,
+      currentItem: item,
+    }));
+  }
+
+  handleFieldChange(event) {
+    event.persist()
+    this.setState( state => ({
+      [event.target.name]: event.target.value
+    }));
+  }
+
+  addTestItem() {
+    var itemToAdd = {
+      title: "test title",
+      artist: Math.random().toString(36).substr(2, 5),
+      year: 'test year',
+      materials: 'test materials'
+    }
+    fetch("http://localhost:3000/api/addItem", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(itemToAdd)
+    })
+      .then(res => res.json())
+      .then((data) => {
+        setTimeout(this.refreshItems(), 1000)
+        this.clearFields();
+    })
+      .catch((err) => {
+      console.log('oops')
+    });
+    this.clearFields();
+    setTimeout(this.refreshItems(), 1000)
+  }
+
+  refreshItems() {
+    fetch("http://localhost:3000/api/getAllItems").then((response) => {
+        return response.json();
+        }).then((results) => {
+          console.log(results)
+          this.setState( state => ({
+            arts: results
+          }));
+    });
+  }
+
+  setSubmitButton(value) {
+    this.setState( state => ({
+      inputButton: value
+    }));
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    if (this.state.inputButton === 0) {
+      var itemId = this.state.currentItem._id
+      fetch("http://localhost:3000/api/deleteItem?id=" + itemId).then((response) => {
+        return response;
+        }).then((results) => {
+          this.clearFields()
+          this.refreshItems()
+      });
+    }
+    if (this.state.inputButton === 1) {
+      var itemToUpdate = {
+        _id: this.state.currentItem._id,
+        title: this.state.titleField,
+        artist: this.state.artistField,
+        year: this.state.yearField,
+        materials: this.state.materialsField
+      }
+      fetch("http://localhost:3000/api/updateItem", {
+        method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itemToUpdate)
+      })
+      .then(res => res.json())
+      .then((data) => {
+        this.clearFields();
+        setTimeout(this.refreshItems(), 1000)
+      })
+      .catch((err) => {
+      console.log('oops')
+      });
+      console.log('UPDATE')
+    }
+    this.clearFields();
+    setTimeout(this.refreshItems(), 1000)
+  }
+
+  clearFields() {
+    this.setState( state => ({
+      currentItem: {},
+      titleField: '',
+      artistField: '',
+      yearField: '',
+      materialsField: '',
     }));
   }
 
@@ -109,7 +223,18 @@ class App extends React.Component{
           <h1>Art Pop-Up</h1> 
           <h2>Select artist name to view artist, price, media and type </h2>
           <ArtList arts={this.state.arts} selectItem={this.selectItem}/>
-          <ArtDetails selectedItem={this.state.currentItem}/>
+          <ArtDetails 
+            selectedItem={this.state.currentItem} 
+            titleField={this.state.titleField} 
+            artistField={this.state.artistField} 
+            yearField={this.state.yearField} 
+            materialsField={this.state.materialsField} 
+            handleFieldChange={this.handleFieldChange}
+            clearFields={this.clearFields}
+            handleSubmit={this.handleSubmit}
+            setSubmitButton={this.setSubmitButton}
+            addTestItem={this.addTestItem}
+            />
       </div>
       );
   }

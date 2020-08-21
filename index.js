@@ -1,3 +1,4 @@
+
 const http = require("http");
 //const art = require('./data');
 const express = require("express");
@@ -19,7 +20,7 @@ app.set('view engine', 'html');
 
 // configure express app
 app.set('port', process.env.PORT || 3000);
-
+app.use(bodyParser.json());
 app.use(express.static(__dirname + '/public')); // set location for static files
 
 //to tell your server (using body parser) that you're sending information as if it was coming from a form
@@ -77,9 +78,26 @@ app.get('/api/deleteItem', (req, res) => {
     .catch(err => next(err));
  });
 
+// update item (week 7/8 extra credit)
+
+app.post('/api/updateItem', (req, res) => {
+  const updatedItem = req.body;
+  return Art.findByIdAndUpdate(updatedItem._id.toObjectId(), {"title": updatedItem.title, "artist": updatedItem.artist, "year": updatedItem.year, "materials": updatedItem.materials} )
+    .then((result) => {
+      console.log(result)
+      if (result.title !== undefined) {
+        res.send(result);
+      } else {
+        res.sendStatus(400).send('Item not added');
+      }
+    })
+    .catch(err => next(err));
+ });
+
 // add item (REST api assignment)
 
- app.post('/api/addItem', (req, res) => {
+ app.post('/api/addItem', (req, res, next) => {
+  console.log(req.body)
   const newItem = req.body
   return Art.create({"title": newItem.title, "artist": newItem.artist, "year": newItem.year, "materials": newItem.materials})
     .then((result) => {
